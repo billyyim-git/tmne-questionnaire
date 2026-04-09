@@ -1,0 +1,6 @@
+# Excel temp files
+~$*
+
+# OS
+.DS_Store
+Thumbs.db

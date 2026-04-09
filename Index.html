@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMNE Sales Questionnaire</title>
+  <style>
+    /* ── TELUS Brand Colours ───────────────────────────────────────────── */
+    :root {
+      --purple:        #4B286D;
+      --purple-dark:   #2A1452;
+      --purple-light:  #7B57A8;
+      --purple-tint:   #F0EAF8;
+      --green:         #248700;
+      --green-bright:  #66CC00;
+      --white:         #FFFFFF;
+      --bg:            #F7F7F8;
+      --border:        #D8D8D8;
+      --text:          #2A2C2E;
+      --text-muted:    #6E6E6E;
+      --error:         #C12335;
+      --error-bg:      #FFF5F5;
+      --success-bg:    #F2FAF0;
+      --warning-bg:    #FFF8EC;
+      --info-bg:       #EEF6FF;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    .header {
+      background: var(--purple);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .header-logo {
+      color: var(--white);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      line-height: 1;
+    }
+    .header-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.35); }
+    .header-title   { color: var(--white); font-size: 13px; opacity: 0.9; font-weight: 400; }
+
+    /* ── Layout ──────────────────────────────────────────────────────────── */
+    .container {
+      max-width: 860px;
+      margin: 32px auto;
+      padding: 0 16px 60px;
+    }
+
+    /* ── Stepper ─────────────────────────────────────────────────────────── */
+    .stepper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      min-width: 80px;
+    }
+    .step-circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--white);
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .25s;
+    }
+    .step.active   .step-circle { background: var(--purple); border-color: var(--purple); color: var(--white); }
+    .step.done     .step-circle { background: var(--green);  border-color: var(--green);  color: var(--white); }
+    .step-label { font-size: 11px; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+    .step.active .step-label    { color: var(--purple); font-weight: 700; }
+    .step.done   .step-label    { color: var(--green); }
+    .step-line {
+      flex: 1; height: 2px; background: var(--border);
+      margin: 0 6px; margin-bottom: 20px; transition: background .25s;
+    }
+    .step-line.done { background: var(--green); }
+
+    /* ── Card ────────────────────────────────────────────────────────────── */
+    .card { background: var(--white); border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); overflow: hidden; }
+    .card-header { background: var(--purple); padding: 22px 30px; }
+    .card-header h2 { color: var(--white); font-size: 17px; font-weight: 700; }
+    .card-header p  { color: rgba(255,255,255,.80); font-size: 12px; margin-top: 4px; }
+    .card-body { padding: 28px 30px; }
+
+    /* ── Form elements ───────────────────────────────────────────────────── */
+    .form-group { margin-bottom: 22px; }
+    .form-label { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .form-label .req { color: var(--error); margin-left: 2px; }
+    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+    .radio-group { display: flex; flex-direction: column; gap: 9px; }
+    .radio-option {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 15px;
+      border: 1.5px solid var(--border); border-radius: 7px;
+      cursor: pointer; background: var(--bg); transition: all .18s;
+    }
+    .radio-option:hover    { border-color: var(--purple-light); background: var(--purple-tint); }
+    .radio-option.selected { border-color: var(--purple); background: var(--purple-tint); }
+    .radio-option input    { margin-top: 1px; accent-color: var(--purple); flex-shrink: 0; }
+    .option-text           { font-size: 13px; color: var(--text); }
+
+    .badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 12px; margin-left: 7px;
+      vertical-align: middle;
+    }
+    .badge-default { background: #E8F5E9; color: var(--green); }
+    .badge-csa     { background: #FFE8E8; color: var(--error); }
+
+    select, input[type="number"] {
+      width: 100%; padding: 9px 13px;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      font-size: 13px; color: var(--text); background: var(--white);
+      outline: none; transition: border-color .18s; appearance: auto;
+    }
+    select:focus, input[type="number"]:focus { border-color: var(--purple); }
+    input[type="number"] { max-width: 160px; }
+
+    .info-box {
+      background: var(--info-bg); border-left: 4px solid #2980B9;
+      padding: 10px 14px; border-radius: 0 6px 6px 0;
+      margin-top: 8px; font-size: 12px; color: var(--text); line-height: 1.55;
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    /* ── Site Cards ──────────────────────────────────────────────────────── */
+    .site-card {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .site-card-header {
+      background: var(--purple-tint); padding: 13px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #DDD3EF;
+    }
+    .site-card-title {
+      font-size: 14px; font-weight: 700; color: var(--purple);
+      display: flex; align-items: center; gap: 9px;
+    }
+    .site-num {
+      background: var(--purple); color: var(--white);
+      width: 24px; height: 24px; border-radius: 50%;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .site-card-grid {
+      padding: 20px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .full-col { grid-column: 1 / -1; }
+
+    .btn-remove {
+      background: none; border: 1px solid var(--error);
+      color: var(--error); padding: 5px 12px;
+      border-radius: 4px; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+    }
+    .btn-remove:hover { background: var(--error-bg); }
+
+    .btn-add-site {
+      width: 100%; padding: 14px;
+      border: 2px dashed var(--purple-light); border-radius: 8px;
+      background: none; color: var(--purple);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 4px;
+    }
+    .btn-add-site:hover { background: var(--purple-tint); border-style: solid; }
+
+    /* ── Navigation buttons ──────────────────────────────────────────────── */
+    .nav-row {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-top: 28px;
+    }
+    .btn-primary {
+      background: var(--purple); color: var(--white);
+      border: none; padding: 11px 28px;
+      border-radius: 6px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background .18s;
+    }
+    .btn-primary:hover { background: var(--purple-dark); }
+    .btn-secondary {
+      background: var(--white); color: var(--purple);
+      border: 1.5px solid var(--purple); padding: 11px 28px;
+      border-radius: 6px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .18s;
+    }
+    .btn-secondary:hover { background: var(--purple-tint); }
+    .btn-ghost {
+      background: var(--bg); color: var(--text);
+      border: 1.5px solid var(--border); padding: 11px 28px;
+      border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+    }
+    .btn-ghost:hover { background: var(--border); }
+
+    /* ── Results ─────────────────────────────────────────────────────────── */
+    .result-banner {
+      border-radius: 8px; padding: 22px 26px;
+      margin-bottom: 26px; display: flex; gap: 18px; align-items: flex-start;
+    }
+    .result-banner.csa     { background: var(--error-bg);   border: 2px solid var(--error); }
+    .result-banner.ok      { background: var(--success-bg); border: 2px solid var(--green); }
+    .result-icon           { font-size: 30px; flex-shrink: 0; line-height: 1; }
+    .result-banner h3      { font-size: 16px; font-weight: 800; margin-bottom: 5px; }
+    .result-banner.csa h3  { color: var(--error); }
+    .result-banner.ok  h3  { color: var(--green); }
+    .result-banner p       { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+
+    .trigger-list { margin-top: 12px; }
+    .trigger-item {
+      display: flex; align-items: baseline; gap: 8px;
+      font-size: 13px; color: var(--text); padding: 3px 0;
+    }
+    .trigger-bullet { color: var(--error); font-size: 18px; line-height: 1; flex-shrink: 0; }
+
+    .pkg-section { margin-bottom: 28px; }
+    .pkg-section h4 {
+      font-size: 14px; font-weight: 800; color: var(--purple);
+      padding-bottom: 8px; margin-bottom: 12px;
+      border-bottom: 2px solid var(--purple-tint);
+    }
+
+    .pkg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .pkg-table th {
+      background: var(--purple); color: var(--white);
+      padding: 10px 14px; text-align: left; font-weight: 700;
+    }
+    .pkg-table th:first-child { border-radius: 0; width: 220px; }
+    .pkg-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .pkg-table tr:last-child td { border-bottom: none; }
+    .pkg-table tr:nth-child(even) td { background: var(--bg); }
+
+    .vtag {
+      display: inline-block; background: var(--purple-tint);
+      color: var(--purple); padding: 2px 8px;
+      border-radius: 4px; font-size: 11px; font-weight: 700;
+      margin-right: 5px; vertical-align: middle;
+    }
+    .ph {
+      display: inline-block; background: #FFF8DC;
+      border: 1px dashed #B8860B; color: #7A5800;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-style: italic; vertical-align: middle;
+    }
+
+    /* ── CSA Warning Banner ──────────────────────────────────────────────── */
+    .csa-banner {
+      background: #FFF0F1;
+      border-bottom: 3px solid var(--error);
+      padding: 11px 32px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      position: sticky;
+      top: 60px;
+      z-index: 99;
+      box-shadow: 0 3px 8px rgba(193,35,53,0.12);
+      animation: slideDown .18s ease;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0);     opacity: 1; }
+    }
+    .csa-banner-icon    { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+    .csa-banner-title   { font-size: 13px; font-weight: 800; color: var(--error); margin-bottom: 3px; }
+    .csa-banner-items   { font-size: 12px; color: var(--text); line-height: 1.6; }
+    .csa-banner-item    { display: inline; }
+    .csa-banner-item + .csa-banner-item::before { content: ' · '; color: var(--error); font-weight: 700; }
+
+    /* ── Utility ─────────────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    @media (max-width: 580px) {
+      .site-card-grid { grid-template-columns: 1fr; }
+      .header { padding: 0 16px; }
+      .container { margin: 16px auto; }
+      .card-body { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-logo">TELUS</div>
+  <div class="header-divider"></div>
+  <div class="header-title">TMNE Sales Questionnaire</div>
+</header>
+
+<!-- ── CSA Warning Banner ──────────────────────────────────────────────────── -->
+<div id="csa-banner" class="csa-banner hidden">
+  <div class="csa-banner-icon">&#9888;&#65039;</div>
+  <div>
+    <div class="csa-banner-title">CSA / SCSA Engagement Required</div>
+    <div class="csa-banner-items" id="csa-banner-items"></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── Stepper ─────────────────────────────────────────────────────────── -->
+  <div class="stepper">
+    <div class="step active" id="si-1">
+      <div class="step-circle">1</div>
+      <div class="step-label">General Info</div>
+    </div>
+    <div class="step-line" id="sl-1"></div>
+    <div class="step" id="si-2">
+      <div class="step-circle">2</div>
+      <div class="step-label">Site Config</div>
+    </div>
+    <div class="step-line" id="sl-2"></div>
+    <div class="step" id="si-3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Results</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 1 — General Questions
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="page-1" class="card">
+    <div class="card-header">
+      <h2>General Information</h2>
+      <p>These questions apply to the entire customer opportunity</p>
+    </div>
+    <div class="card-body">
+
+      <!-- Q1: Equipment ownership -->
+      <div class="form-group">
+        <label class="form-label">Does the customer plan to own the equipment?<span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="radio-option selected" onclick="pickRadio('eq-own','no',this)">
+            <input type="radio" name="eq-own" value="no" checked>
+            <span class="option-text">
+              No — Equipment provided &amp; managed by TELUS
+            </span>
+          </label>
+          <label class="radio-option" onclick="pickRadio('eq-own','yes',this)">
+            <input type="radio" name="eq-own" value="yes">
+            <span class="option-text">
+              Yes — Customer-owned equipment
+              <span class="badge badge-csa">Requires CSA</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q2: Management model -->
+      <div class="form-group">
+        <label class="form-label">Preferred management model<span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="radio-option selected" onclick="pickRadio('mgmt','fully-managed',this)">
+            <input type="radio" name="mgmt" value="fully-managed" checked>
+            <span class="option-text">
+              Fully Managed
+            </span>
+          </label>
+          <label class="radio-option" onclick="pickRadio('mgmt','co-std',this)">
+            <input type="radio" name="mgmt" value="co-std">
+            <span class="option-text">Co-managed — Standard access categories</span>
+          </label>
+          <label class="radio-option" onclick="pickRadio('mgmt','co-adv',this)">
+            <input type="radio" name="mgmt" value="co-adv">
+            <span class="option-text">
+              Co-managed — Advanced access
+              <span class="badge badge-csa">Requires CSA</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <span></span>
+        <button class="btn-primary" onclick="toStep2()">Next: Site Configuration &rarr;</button>
+      </div>
+
+    </div>
+  </div><!-- /page-1 -->
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 2 — Site Configuration
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="page-2" class="card hidden">
+    <div class="card-header">
+      <h2>Site Configuration</h2>
+      <p>Add each site type in the customer's deployment. You can have multiple site types.</p>
+      <p style="margin-top:6px;opacity:1;font-weight:600;">TMNE Packages will be determined based on selected Bandwidth.</p>
+    </div>
+    <div class="card-body">
+
+      <div id="sites-wrap"></div>
+
+      <button class="btn-add-site" onclick="addSite()">&#43; Add Site Type</button>
+
+      <div class="nav-row">
+        <button class="btn-secondary" onclick="showPage(1)">&larr; Back</button>
+        <button class="btn-primary" onclick="toResults()">View Results &rarr;</button>
+      </div>
+
+    </div>
+  </div><!-- /page-2 -->
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 3 — Results
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="page-3" class="card hidden">
+    <div class="card-header">
+      <h2>Recommendation Results</h2>
+      <p>Based on the answers provided for this opportunity</p>
+    </div>
+    <div class="card-body" id="results-body">
+      <!-- injected by JS -->
+    </div>
+  </div><!-- /page-3 -->
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+/* ── Package database (placeholders for Velo / Meraki / pricing) ───────── */
+const PKG_DB = {
+  'branch-250': {
+    label:       'Branch 250 Mbps',
+    fortinet:    'FG-40F, FS-108F, FAP-231G-A, wireless backup',
+    velo:        null,
+    meraki:      'MX67, MS130-8P, MR28, wireless backup',
+    minBandwidth:'300 Mbps'
+  },
+  'branch-500': {
+    label:       'Branch 500 Mbps',
+    fortinet:    'FG-60F, FS-124F-POE, FAP-234F-A, wireless backup',
+    velo:        null,
+    meraki:      'MX75, MS130-24P, MR36, wireless backup',
+    minBandwidth:'500 Mbps'
+  },
+  'hub-1000': {
+    label:       'Hub 1000 Mbps',
+    fortinet:    'FG-80F, FS-124F-POE, FAP-234F-A, wireless backup',
+    velo:        null,
+    meraki:      'MX75, MS-225-48LP, MR78, wireless backup',
+    minBandwidth:null
+  },
+  'hub-2000': {
+    label:       'Hub 2000 Mbps',
+    fortinet:    'FG-100F, FS-148F-POE, FAP-234F-A, wireless backup',
+    velo:        null,
+    meraki:      'MX95, C9300X-12Y-M, MR86, wireless backup',
+    minBandwidth:null
+  }
+};
+
+const SECURITY_LABELS = {
+  'none':              'None',
+  'std-virt-fort':     'Standard TELUS hosted virtual firewall (Fortinet)',
+  'std-ondev-meraki':  'Standard on-device firewall (Meraki)',
+  'adv-central-fort':  'Advanced centralized firewall (Fortinet)',
+  'adv-ngfw-fort':     'Advanced NGFW at the edge (Fortinet)',
+  'sase-remote':       'SASE for Remote Worker',
+  'sase-branch':       'SASE for Branches',
+  'third-party':       'Integration with customer-managed / third-party firewall'
+};
+
+const MGMT_LABELS = {
+  'fully-managed': 'Fully Managed',
+  'co-std':        'Co-managed — Standard Access',
+  'co-adv':        'Co-managed — Advanced Access'
+};
+
+/* ── State ─────────────────────────────────────────────────────────────── */
+let siteSeq = 0;           // ever-incrementing site ID counter
+let activeSiteIds = [];    // IDs of currently displayed site cards
+
+/* ── Stepper ───────────────────────────────────────────────────────────── */
+function showPage(n) {
+  [1,2,3].forEach(i => document.getElementById('page-'+i).classList.add('hidden'));
+  document.getElementById('page-'+n).classList.remove('hidden');
+  updateStepper(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStepper(active) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('si-'+i);
+    el.classList.remove('active','done');
+    if      (i < active) el.classList.add('done');
+    else if (i === active) el.classList.add('active');
+  });
+  [1,2].forEach(i => {
+    document.getElementById('sl-'+i).classList.toggle('done', i < active);
+  });
+}
+
+/* ── Radio helpers ─────────────────────────────────────────────────────── */
+function pickRadio(name, value, label) {
+  document.querySelectorAll('[name="'+name+'"]').forEach(r =>
+    r.closest('.radio-option').classList.remove('selected')
+  );
+  label.classList.add('selected');
+  updateCsaBanner();
+}
+
+function radioVal(name) {
+  const el = document.querySelector('[name="'+name+'"]:checked');
+  return el ? el.value : null;
+}
+
+/* ── Real-time CSA banner ───────────────────────────────────────────────── */
+function updateCsaBanner() {
+  const triggers = [];
+
+  if (radioVal('eq-own') === 'yes')  triggers.push('Customer-owned equipment');
+  if (radioVal('mgmt')   === 'co-adv') triggers.push('Co-managed advanced access');
+
+  activeSiteIds.forEach(id => {
+    const haEl   = document.getElementById('ha-'+id);
+    const swEl   = document.getElementById('sw-'+id);
+    const secEl  = document.getElementById('sec-'+id);
+    const mplsEl = document.getElementById('mpls-'+id);
+    const ipEl   = document.getElementById('ip-'+id);
+    if (!haEl) return;
+
+    const lbl = 'Site ' + id;
+    if (haEl.value === 'yes')                                              triggers.push(lbl + ': SD-WAN HA');
+    if (parseInt(swEl?.value || 0) > 1)                                    triggers.push(lbl + ': ' + swEl.value + ' LAN switches');
+    if (['adv-central-fort','adv-ngfw-fort','sase-remote','sase-branch']
+        .includes(secEl.value))                                            triggers.push(lbl + ': ' + SECURITY_LABELS[secEl.value]);
+    if (mplsEl.value === 'yes')                                            triggers.push(lbl + ': MPLS Gateway');
+    if (ipEl.value   === 'static')                                         triggers.push(lbl + ': Static underlay IP');
+  });
+
+  const banner = document.getElementById('csa-banner');
+  if (triggers.length > 0) {
+    document.getElementById('csa-banner-items').innerHTML =
+      triggers.map(t => '<span class="csa-banner-item">' + t + '</span>').join('');
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+/* ── Page 1 → 2 ────────────────────────────────────────────────────────── */
+function toStep2() {
+  if (activeSiteIds.length === 0) addSite();
+  showPage(2);
+}
+
+/* ── Site card builder ──────────────────────────────────────────────────── */
+function addSite() {
+  siteSeq++;
+  const id  = siteSeq;
+  activeSiteIds.push(id);
+
+  const div = document.createElement('div');
+  div.className = 'site-card';
+  div.id = 'sc-'+id;
+  div.innerHTML = siteCardHTML(id);
+  document.getElementById('sites-wrap').appendChild(div);
+  refreshBandwidthOptions(id);   // set correct bandwidth options
+}
+
+function removeSite(id) {
+  const el = document.getElementById('sc-'+id);
+  if (el) el.remove();
+  activeSiteIds = activeSiteIds.filter(x => x !== id);
+  updateCsaBanner();
+}
+
+function siteCardHTML(id) {
+  const num = activeSiteIds.length; // display number (may differ from id)
+  return `
+    <div class="site-card-header">
+      <div class="site-card-title">
+        <div class="site-num">${id}</div>
+        Site Type ${id}
+      </div>
+      ${id > 1
+        ? `<button class="btn-remove" onclick="removeSite(${id})">&#10005; Remove</button>`
+        : ''}
+    </div>
+    <div class="site-card-grid">
+
+      <!-- Site type -->
+      <div class="form-group">
+        <label class="form-label">Site Type<span class="req">*</span></label>
+        <select id="st-${id}" onchange="refreshBandwidthOptions(${id})">
+          <option value="branch">Branch</option>
+          <option value="hub">Hub</option>
+        </select>
+      </div>
+
+      <!-- Number of sites -->
+      <div class="form-group">
+        <label class="form-label">Number of Sites<span class="req">*</span></label>
+        <input type="number" id="sc-num-${id}" min="1" value="1">
+      </div>
+
+      <!-- Bandwidth -->
+      <div class="form-group">
+        <label class="form-label">Bandwidth<span class="req">*</span></label>
+        <select id="bw-${id}"></select>
+        <div class="info-box" id="bw-hint-${id}"></div>
+      </div>
+
+      <!-- SD-WAN HA -->
+      <div class="form-group">
+        <label class="form-label">SD-WAN HA Required?<span class="req">*</span></label>
+        <select id="ha-${id}" onchange="updateCsaBanner()">
+          <option value="no">No</option>
+          <option value="yes">Yes — Requires CSA</option>
+        </select>
+      </div>
+
+      <!-- LAN Switches -->
+      <div class="form-group">
+        <label class="form-label">Number of LAN Switches<span class="req">*</span></label>
+        <input type="number" id="sw-${id}" min="0" value="1" oninput="updateCsaBanner()">
+        <div class="form-hint">&#9888; More than 1 switch requires CSA engagement</div>
+      </div>
+
+      <!-- APs -->
+      <div class="form-group">
+        <label class="form-label">Number of Access Points (APs)<span class="req">*</span></label>
+        <select id="ap-${id}">
+          <option value="0">0</option><option value="1">1</option>
+          <option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+
+      <!-- Security type (full width) -->
+      <div class="form-group full-col">
+        <label class="form-label">Security Type<span class="req">*</span></label>
+        <select id="sec-${id}" onchange="updateCsaBanner()">
+          <option value="none">1. None</option>
+          <option value="std-virt-fort">2. Standard TELUS hosted virtual firewall (Fortinet)</option>
+          <option value="std-ondev-meraki">3. Standard on-device firewall (Meraki)</option>
+          <option value="adv-central-fort">4. Advanced centralized firewall (Fortinet) — Requires CSA</option>
+          <option value="adv-ngfw-fort">5. Advanced NGFW at the edge (Fortinet) — Requires CSA</option>
+          <option value="sase-remote">6. SASE for Remote Worker — Requires CSA</option>
+          <option value="sase-branch">7. SASE for Branches — Requires CSA</option>
+          <option value="third-party">8. Integration with customer-managed / third-party firewall</option>
+        </select>
+      </div>
+
+      <!-- MPLS Gateway -->
+      <div class="form-group">
+        <label class="form-label">MPLS Gateway?<span class="req">*</span></label>
+        <select id="mpls-${id}" onchange="updateCsaBanner()">
+          <option value="no">No</option>
+          <option value="yes">Yes — Requires CSA</option>
+        </select>
+      </div>
+
+      <!-- Underlay IP -->
+      <div class="form-group">
+        <label class="form-label">Underlay IP Type<span class="req">*</span></label>
+        <select id="ip-${id}" onchange="updateCsaBanner()">
+          <option value="dynamic">Dynamic (Default)</option>
+          <option value="static">Static — Requires CSA</option>
+        </select>
+      </div>
+
+    </div>
+  `;
+}
+
+function refreshBandwidthOptions(id) {
+  const type  = document.getElementById('st-'+id).value;
+  const bwSel = document.getElementById('bw-'+id);
+  const hint  = document.getElementById('bw-hint-'+id);
+
+  if (type === 'branch') {
+    bwSel.innerHTML =
+      '<option value="250">250 Mbps</option>' +
+      '<option value="500">500 Mbps</option>';
+    hint.innerHTML =
+      '<strong>Guidance:</strong> 250 Mbps is typically suitable for up to ~50 users. ' +
+      '500 Mbps for 50–150 users.';
+  } else {
+    bwSel.innerHTML =
+      '<option value="1000">1000 Mbps</option>' +
+      '<option value="2000">2000 Mbps</option>';
+    hint.innerHTML =
+      '<strong>Guidance:</strong> 1000 Mbps for mid-size hub/aggregation sites. ' +
+      '2000 Mbps for large hub or data-centre aggregation.';
+  }
+}
+
+/* ── Collect site data ──────────────────────────────────────────────────── */
+function collectSites() {
+  return activeSiteIds.map(id => ({
+    id,
+    type:        document.getElementById('st-'+id)?.value,
+    count:       parseInt(document.getElementById('sc-num-'+id)?.value) || 1,
+    bandwidth:   document.getElementById('bw-'+id)?.value,
+    ha:          document.getElementById('ha-'+id)?.value,
+    switches:    parseInt(document.getElementById('sw-'+id)?.value) || 0,
+    aps:         document.getElementById('ap-'+id)?.value,
+    security:    document.getElementById('sec-'+id)?.value,
+    mpls:        document.getElementById('mpls-'+id)?.value,
+    ip:          document.getElementById('ip-'+id)?.value
+  }));
+}
+
+/* ── CSA trigger evaluation ─────────────────────────────────────────────── */
+function evalTriggers(ownsEq, mgmt, sites) {
+  const triggers = [];
+
+  if (ownsEq === 'yes') triggers.push('Customer-owned equipment selected');
+  if (mgmt   === 'co-adv') triggers.push('Co-managed advanced access selected');
+
+  sites.forEach((s, idx) => {
+    const lbl = `Site ${idx+1} (${s.type === 'branch' ? 'Branch' : 'Hub'} ${s.bandwidth} Mbps)`;
+    if (s.ha === 'yes')      triggers.push(`${lbl}: SD-WAN HA required`);
+    if (s.switches > 1)      triggers.push(`${lbl}: ${s.switches} LAN switches — more than 1 requires CSA`);
+    if (['adv-central-fort','adv-ngfw-fort','sase-remote','sase-branch'].includes(s.security))
+      triggers.push(`${lbl}: Security — ${SECURITY_LABELS[s.security]}`);
+    if (s.mpls === 'yes')    triggers.push(`${lbl}: MPLS Gateway required`);
+    if (s.ip   === 'static') triggers.push(`${lbl}: Static underlay IP required`);
+  });
+
+  return triggers;
+}
+
+/* ── Results renderer ───────────────────────────────────────────────────── */
+function toResults() {
+  const activeCards = document.querySelectorAll('.site-card');
+  if (activeCards.length === 0) {
+    alert('Please add at least one site type before continuing.');
+    return;
+  }
+
+  const ownsEq = radioVal('eq-own');
+  const mgmt   = radioVal('mgmt');
+  const sites  = collectSites();
+  const triggers = evalTriggers(ownsEq, mgmt, sites);
+
+  let html = '';
+
+  /* ── CSA path ── */
+  if (triggers.length > 0) {
+    html += `
+      <div class="result-banner csa">
+        <div class="result-icon">&#9888;&#65039;</div>
+        <div>
+          <h3>CSA / SCSA Engagement Required</h3>
+          <p>One or more selections require a CSA or SCSA to be engaged. Please follow the standard process to produce a detailed quote and Statement of Work. The following items triggered this recommendation:</p>
+          <div class="trigger-list">
+            ${triggers.map(t => `
+              <div class="trigger-item">
+                <span class="trigger-bullet">&#8226;</span>
+                <span>${t}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="nav-row" style="margin-top:20px;">
+        <div style="display:flex;gap:10px;">
+          <button class="btn-secondary" onclick="showPage(1)">&larr; General Info</button>
+          <button class="btn-secondary" onclick="showPage(2)">&larr; Site Config</button>
+        </div>
+        <button class="btn-ghost" onclick="restart()">New Assessment</button>
+      </div>
+    `;
+
+  /* ── Standard package path ── */
+  } else {
+    html += `
+      <div class="result-banner ok">
+        <div class="result-icon">&#9989;</div>
+        <div>
+          <h3>Standard Package — No CSA Engagement Needed</h3>
+          <p>This opportunity can be fulfilled using a standard TMNE package. Recommended configurations for each site type are shown below.</p>
+        </div>
+      </div>
+    `;
+
+    sites.forEach((s, idx) => {
+      const key  = s.type + '-' + s.bandwidth;
+      const pkg  = PKG_DB[key] || {};
+      const head = `Site Type ${idx+1}: ${s.type === 'branch' ? 'Branch' : 'Hub'} ${s.bandwidth} Mbps &times; ${s.count} site(s)`;
+
+      html += `
+        <div class="pkg-section">
+          <h4>${head}</h4>
+          <table class="pkg-table">
+            <thead>
+              <tr><th>Parameter</th><th>Details</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Package</strong></td>
+                <td>${pkg.label || key}</td>
+              </tr>
+              <tr>
+                <td><strong>Fortinet</strong></td>
+                <td>
+                  <span class="vtag">Fortinet</span>
+                  ${pkg.fortinet
+                    ? pkg.fortinet + (s.aps > 0 ? ` &times; ${s.aps} AP(s)` : '')
+                    : '<span class="ph">To be added</span>'}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>VeloCloud</strong></td>
+                <td><span class="vtag">Velo</span> <span class="ph">To be added</span></td>
+              </tr>
+              <tr>
+                <td><strong>Meraki</strong></td>
+                <td>
+                  <span class="vtag">Meraki</span>
+                  ${pkg.meraki ? pkg.meraki : '<span class="ph">To be added</span>'}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Min. Underlay Bandwidth</strong></td>
+                <td>${pkg.minBandwidth || '<span class="ph">To be added</span>'}</td>
+              </tr>
+              <tr>
+                <td><strong>Underlay IP Type</strong></td>
+                <td>Dynamic (Default)</td>
+              </tr>
+              <tr>
+                <td><strong>LAN Switches</strong></td>
+                <td>${s.switches}</td>
+              </tr>
+              <tr>
+                <td><strong>Access Points</strong></td>
+                <td>${s.aps}</td>
+              </tr>
+              <tr>
+                <td><strong>Security</strong></td>
+                <td>${SECURITY_LABELS[s.security] || s.security}</td>
+              </tr>
+              <tr>
+                <td><strong>Management Model</strong></td>
+                <td>${MGMT_LABELS[mgmt] || mgmt}</td>
+              </tr>
+              <tr>
+                <td><strong>Pricing (per site)</strong></td>
+                <td><span class="ph">To be added</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="nav-row" style="margin-top:8px;">
+        <div style="display:flex;gap:10px;">
+          <button class="btn-secondary" onclick="showPage(1)">&larr; General Info</button>
+          <button class="btn-secondary" onclick="showPage(2)">&larr; Site Config</button>
+        </div>
+        <button class="btn-ghost" onclick="restart()">New Assessment</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('results-body').innerHTML = html;
+  showPage(3);
+}
+
+/* ── Restart ────────────────────────────────────────────────────────────── */
+function restart() {
+  siteSeq       = 0;
+  activeSiteIds = [];
+  document.getElementById('sites-wrap').innerHTML = '';
+  // reset page-1 radios
+  document.querySelector('[name="eq-own"][value="no"]').click();
+  document.querySelector('[name="mgmt"][value="fully-managed"]').click();
+  showPage(1);
+}
+</script>
+
+</body>
+</html>
